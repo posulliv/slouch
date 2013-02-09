@@ -1,22 +1,14 @@
-checkModel = (model) ->
-  return 'date not set' unless model.date
-  return 'description missing' unless model.desc
-  return 'description too short' if model.desc.length < 5
-  return 'description too long'  if model.desc.length > 100
-  return 'bump count not positive' unless model.bumpCount >= 0
+console.log 'hi'
 
-Hope = Backbone.Model.extend
+Todo = Backbone.Model.extend
   defaults: ->
     desc: 'empty hope...'
     date: new Date()
+    name: 'will'
     bumpCount: 0
 
   initialize: ->
     @set(desc: @defaults.desc) unless @get('desc')
-    @on('error', (model, err) -> console.log(err))
-
-  validate: (attrs) ->
-    checkModel(attrs)
 
   toggle: ->
     @save(done: !@get('done'))
@@ -27,17 +19,17 @@ Hope = Backbone.Model.extend
   isToday: ->
     @get('date').getDate() == (new Date).getDate()
 
-HopeList = Backbone.Collection.extend
-  model: Hope
+TodoList = Backbone.Collection.extend
+  model: Todo
 
   url: 'list'
 
   comparator: (a) ->
     a.get 'date'
 
-Hopes = new HopeList
+Todos = new TodoList
 
-HopeView = Backbone.View.extend
+TodoView = Backbone.View.extend
   tagName: 'li'
 
   template: _.template($('#item-template').html())
@@ -79,47 +71,47 @@ HopeView = Backbone.View.extend
     @model.clear()
 
 AppView = Backbone.View.extend
-  el: $('#hopeapp')
+  el: $('#todoapp')
 
   events:
-    'keypress #new-hope': 'createOnEnter'
+    'keypress #new-todo': 'createOnEnter'
 
   initialize: ->
-    @input = @$('#new-hope')
+    @input = @$('#new-todo')
     @allCheckbox = @$('#toggle-all')[0]
 
-    Hopes.bind('add', @addOne, @)
-    Hopes.bind('reset', @addAll, @)
-    Hopes.bind('all', @render, @)
+    Todos.bind('add', @addOne, @)
+    Todos.bind('reset', @addAll, @)
+    Todos.bind('all', @render, @)
 
     @footer = @$('footer')
     @main = @$('#main')
 
-    Hopes.fetch()
+    Todos.fetch()
 
   render: ->
-    @main.show()
-    @footer.show()
+    #if (Todos.length)
+       @main.show()
+       @footer.show()
+    #else
+    #  @main.hide()
+    #  @footer.hide()
 
-  addOne: (hope) ->
-    el = "#hope-list"
-    view = new HopeView(model: hope)
+  addOne: (todo) ->
+    el = "#todo-list"
+    view = new TodoView(model: todo)
     @$(el).append(view.render().el)
 
   addAll: ->
-    Hopes.each(@addOne)
+    Todos.each(@addOne)
 
   createOnEnter: (e) ->
-    $('#error').text( '' )
     return unless e.keyCode == 13
     return unless @input.val()
 
-    Hopes.create {desc: @input.val()},
-      error: (model, error) ->
-        $('#error').text( error )
-        console.log "error here is " + error
+    Todos.create desc: @input.val()
 
 App = new AppView
 
 window.app = App
-window.hopes = Hopes
+window.Todos = Todos

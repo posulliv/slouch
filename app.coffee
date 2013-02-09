@@ -3,13 +3,6 @@ config = require('./config')
 uuid = require('node-uuid')
 app = express.createServer()
 _ = require('underscore')
-pg = require('pg').native
-JsonStore = require('./json_store')
-
-db = new pg.Client(config.database_url)
-db.connect()
-
-jstore = new JsonStore(db, 'hopes')
 
 everyauth = require('everyauth')
 everyauth.debug = true
@@ -43,20 +36,12 @@ everyauth.google
   )
   .redirectPath('/');
 
-ensureSSL = (req, res, next) ->
-  unless config.env == 'production'
-    return next()
-  if req.headers["x-forwarded-proto"] == "https"
-    return next()
-  res.redirect("https://" + req.headers.host + req.url)
-
 app.configure( ->
   app.set('views', __dirname + '/views')
   app.set('view engine', 'jade')
   app.use(express.logger())
   app.use(express.cookieParser())
-  app.use(express.session({ secret: config.secret }))
-  app.use(ensureSSL)
+  app.use(express.session({ secret: 'foobar' }))
   app.use(express.bodyParser())
   app.use(everyauth.middleware())
   app.use(require('connect-assets')() )
@@ -68,27 +53,49 @@ app.configure( ->
 app.get '/', (request, response) ->
   response.render('index', user: request.user, title: 'hom3e')
 
+list = [
+  {
+    id: uuid()
+    desc: 'today'
+    date: new Date()
+    bumpCount: 0
+  },
+  {
+    id: uuid()
+    desc: 'old'
+    date: new Date(2007,9,2)
+    bumpCount: 2
+  },
+  {
+    id: uuid()
+    desc: 'also old'
+    date: new Date(2010,9,2)
+    bumpCount: 0
+  }
+]
+
 app.get '/list', (request, response) ->
-  console.log request.user
-  jstore.getAllByUserId request.user?.google?.id, (err, hopes) ->
-    response.send( JSON.stringify(hopes) )
+  response.send( JSON.stringify(list) )
 
 app.post '/list', (request, response) ->
-  request.body.user_id = request.user.google.id
-  jstore.create request.body, (err, hope) ->
-    response.send JSON.stringify(err || hope)
+  item = request.body
+  item.id = uuid()
+  list.push item
+  response.send( JSON.stringify(item) )
 
 app.get '/list/:id', (request, response) ->
-  jstore.get request.params.id, (err, hope) ->
-    response.send JSON.stringify(err || hope)
+  item = _.find( list, (it) -> it.id == request.params.id )
+  response.send JSON.stringify(item)
 
 app.put '/list/:id', (request, response) ->
-  jstore.update request.body, (err, hope) ->
-    response.send JSON.stringify(err || hope)
+  list = _.reject( list, (it) -> it.id == request.params.id )
+  item = request.body
+  list.push item
+  response.send JSON.stringify(item)
 
 app.delete '/list/:id', (request, response) ->
-  jstore.destroy request.params.id, (err) ->
-    response.send JSON.stringify(err || 'ok')
+  list = _.reject( list, (it) -> it.id == request.params.id )
+  response.send 'ok'
 
 console.log("port: #{config.port}")
 app.listen config.port

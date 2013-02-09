@@ -1,22 +1,41 @@
 extends layout
 
 block content
-  #hopeapp
+  #todoapp
     header
-      h3 Hopes
-      input#new-hope(type='text', placeholder='today I hope to...')
-      #error
+      h1 Hopes
+      input#new-todo(type='text', placeholder='what needs to be done?')
     section#main
-      ul#hope-list
+      ul#todo-list
+    footer
+      a#clear-completed Clear completed
+      #todo-count
 
   |  <script type="text/template" id="item-template">
   |    <div class="view">
   |      <label><%- desc %></label>
-  |      <%- moment(date).calendar() %>
-  |      <a class="bump">[bump]<%= bumpCount == 0 ? '' : " (" + bumpCount + ")" %></a>
-  |      <a class="destroy">[finished]</a>
+  |      <%- date %>
+  |      <a class="destroy">x</a>
+  |      <a class="bump">bump<%= bumpCount == 0 ? '' : " (" + bumpCount + ")" %></a>
   |    </div>
   |    <input style='visibility:hidden' class="edit" type="text" value="<%= desc %>" />
   |  </script>
+
+  |  <script type="text/template" id="stats-template">
+  |    <div class="todo-count"><b><%= remaining %></b> <%= remaining == 1 ? 'item' : 'items' %> left</div>
+  |  </script>
+
+
+  h1= title
+  h2 Yesterday 2012-04-25
+  ul
+    li Work on a query [finished] [continue]
+    li Did support tickets [finished] [continue]
+    li fix a thing (finished)
+
+  h2 Today 2012-04-26
+  ul
+    li Merge my thing   [finished] [continue]
+    li Deploy a fix  [finished] [continue]
 
 
