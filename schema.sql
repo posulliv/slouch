@@ -1,6 +1,6 @@
 CREATE TABLE hopes
 (
-  id VARCHAR(128) NOT NULL PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
   "desc" VARCHAR(256) NOT NULL,
   "date" VARCHAR(128),
   bumpCount INT

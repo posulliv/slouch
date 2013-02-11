@@ -20,7 +20,7 @@ app.configure( ->
 )
 
 app.get '/', (request, response) ->
-  response.render('index', title: 'hom3e')
+  response.render('index', title: 'Home')
 
 log = (msg) ->
   () ->
@@ -40,10 +40,9 @@ app.get '/list', (request, response) ->
 
 app.post '/list', (request, response) ->
   hope = request.body
-  hope.id = uuid()
-  #ak.post 'test', 'hopes', JSON.stringify(hope), (res) ->
-  ak.post config.ak_schema, config.ak_table, {id: hope.id, desc: hope.desc, date: hope.date, bumpCount: hope.bumpCount}, (res) ->
-    log('posted an hope')(res)
+  #ak.post config.ak_schema, config.ak_table, JSON.stringify(hope), (res) ->
+  ak.post config.ak_schema, config.ak_table, {desc: hope.desc, date: hope.date, bumpCount: hope.bumpCount}, (res) ->
+    log('posted a hope')(res)
   response.send( JSON.stringify(hope) )
 
 app.get '/list/:id', (request, response) ->
