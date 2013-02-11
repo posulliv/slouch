@@ -44,19 +44,19 @@ app.get '/', (request, response) ->
 app.get '/list', (request, response) ->
   ak.get config.ak_schema, config.ak_table, '', (res) ->
     log('retrieved')(res)
-    response.send(res.body)
+    response.send res.body
 
 app.post '/list', (request, response) ->
   hope = request.body
   #ak.post config.ak_schema, config.ak_table, JSON.stringify(hope), (res) ->
   ak.post config.ak_schema, config.ak_table, {desc: hope.desc, date: hope.date, bumpcount: hope.bumpcount}, (res) ->
     log('posted a hope')(res)
-  response.send( JSON.stringify(hope) )
+    response.send res.body
 
 app.get '/list/:id', (request, response) ->
-  ak.get config.ak_host, config.ak_table, request.params.id, (res) ->
+  ak.get config.ak_schema, config.ak_table, request.params.id, (res) ->
     log('retrieved an hope')(res)
-    response.send JSON.stringify(res)
+    response.send res.body
 
 app.put '/list/:id', (request, response) ->
   hope = request.body
