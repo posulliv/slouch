@@ -10,7 +10,8 @@
     "jade": ">= 0.0.1",
     "node-uuid": ">= 0.0.1",
     "underscore": ">= 0.0.1",
-    "connect-assets": ">= 0.0.1"
+    "connect-assets": ">= 0.0.1",
+    "request": "git://github.com/mikeal/request.git"
   },
   "engines": {
     "node": "0.8.x",

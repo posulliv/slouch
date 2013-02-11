@@ -3,38 +3,8 @@ config = require('./config')
 uuid = require('node-uuid')
 app = express.createServer()
 _ = require('underscore')
-
-everyauth = require('everyauth')
-everyauth.debug = true
-
-usersByGoogleId = {}
-usersById = {}
-nextUserId = 0
-
-addUser = (source, sourceUser) ->
-  if arguments.length == 1
-    user = sourceUser = source;
-    user.id = ++nextUserId;
-    return usersById[nextUserId] = user
-  else
-    user = usersById[++nextUserId] = {id: nextUserId};
-    user[source] = sourceUser;
-  return user
-
-everyauth.everymodule
-  .findUserById( (id, callback) ->
-    callback(null, usersById[id])
-  )
-everyauth.google
-  .appId(config.google.clientId)
-  .appSecret(config.google.clientSecret)
-  .scope('https://www.googleapis.com/auth/userinfo.profile')
-  .findOrCreateUser( (sess, accessToken, extra, googleUser) ->
-    googleUser.refreshToken = extra.refresh_token
-    googleUser.expiresIn = extra.expires_in
-    return usersByGoogleId[googleUser.id] || (usersByGoogleId[googleUser.id] = addUser('google', googleUser));
-  )
-  .redirectPath('/');
+akiban = require('./akiban_rest')
+ak = new akiban.AkibanClient()
 
 app.configure( ->
   app.set('views', __dirname + '/views')
@@ -43,7 +13,6 @@ app.configure( ->
   app.use(express.cookieParser())
   app.use(express.session({ secret: 'foobar' }))
   app.use(express.bodyParser())
-  app.use(everyauth.middleware())
   app.use(require('connect-assets')() )
   app.use(express.methodOverride())
   app.use(app.router)
@@ -51,51 +20,45 @@ app.configure( ->
 )
 
 app.get '/', (request, response) ->
-  response.render('index', user: request.user, title: 'hom3e')
+  response.render('index', title: 'hom3e')
 
-list = [
-  {
-    id: uuid()
-    desc: 'today'
-    date: new Date()
-    bumpCount: 0
-  },
-  {
-    id: uuid()
-    desc: 'old'
-    date: new Date(2007,9,2)
-    bumpCount: 2
-  },
-  {
-    id: uuid()
-    desc: 'also old'
-    date: new Date(2010,9,2)
-    bumpCount: 0
-  }
-]
+log = (msg) ->
+  () ->
+    console.log("========")
+    console.log(msg)
+    console.log("--------")
+    unless arguments[0].error
+      _(arguments[0].body).forEach (x) ->
+        console.log(x)
+    console.log(arguments) if arguments[0].error
+    console.log("--------")
 
 app.get '/list', (request, response) ->
-  response.send( JSON.stringify(list) )
+  ak.get 'test', 'hopes', '', (res) ->
+    log('retrieved')(res)
+    response.send(res.body)
 
 app.post '/list', (request, response) ->
-  item = request.body
-  item.id = uuid()
-  list.push item
-  response.send( JSON.stringify(item) )
+  hope = request.body
+  hope.id = uuid()
+  #ak.post 'test', 'hopes', JSON.stringify(hope), (res) ->
+  ak.post 'test', 'hopes', {id: hope.id, desc: hope.desc, date: hope.date, bumpCount: hope.bumpCount}, (res) ->
+    log('posted an hope')(res)
+  response.send( JSON.stringify(hope) )
 
 app.get '/list/:id', (request, response) ->
-  item = _.find( list, (it) -> it.id == request.params.id )
-  response.send JSON.stringify(item)
+  ak.get 'test', 'hopes', request.params.id, (res) ->
+    log('retrieved an hope')(res)
+    response.send JSON.stringify(res)
 
 app.put '/list/:id', (request, response) ->
-  list = _.reject( list, (it) -> it.id == request.params.id )
-  item = request.body
-  list.push item
-  response.send JSON.stringify(item)
+  hope = request.body
+  ak.put 'test', 'hopes', {id: hope.id, desc: hope.desc, date: hope.date, bumpCount: hope.bumpCount}, request.params.id, (res) ->
+    response.send res
 
 app.delete '/list/:id', (request, response) ->
-  list = _.reject( list, (it) -> it.id == request.params.id )
-  response.send 'ok'
+  ak.del 'test', 'hopes', request.params.id, (res) ->
+    response.send 'ok'
 
 console.log("port: #{config.port}")
 app.listen config.port
