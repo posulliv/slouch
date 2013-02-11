@@ -3,13 +3,13 @@ checkModel = (model) ->
   return 'description missing' unless model.desc
   return 'description too short' if model.desc.length < 5
   return 'description too long'  if model.desc.length > 100
-  return 'bump count not positive' unless model.bumpCount >= 0
+  return 'bump count not positive' unless model.bumpcount >= 0
 
 Hope = Backbone.Model.extend
   defaults: ->
     desc: 'empty hope...'
     date: new Date()
-    bumpCount: 0
+    bumpcount: 0
 
   initialize: ->
     @set(desc: @defaults.desc) unless @get('desc')
@@ -72,7 +72,7 @@ HopeView = Backbone.View.extend
     @close() if e.keyCode == 13
 
   bump: ->
-    @model.set('bumpCount', @model.get('bumpCount') + 1)
+    @model.set('bumpcount', @model.get('bumpcount') + 1)
     @model.save()
 
   clear: ->

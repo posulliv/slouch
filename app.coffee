@@ -4,7 +4,15 @@ uuid = require('node-uuid')
 app = express.createServer()
 _ = require('underscore')
 akiban = require('./akiban_rest')
+pg = require('pg').native
 ak = new akiban.AkibanClient(config.ak_host, config.ak_rest_port)
+#db = new pg.Client(config.ak_db_url)
+db = new pg.Client(
+  host: config.ak_host,
+  port: config.ak_sql_port,
+  database: config.ak_schema
+)
+db.connect()
 
 app.configure( ->
   app.set('views', __dirname + '/views')
@@ -41,7 +49,7 @@ app.get '/list', (request, response) ->
 app.post '/list', (request, response) ->
   hope = request.body
   #ak.post config.ak_schema, config.ak_table, JSON.stringify(hope), (res) ->
-  ak.post config.ak_schema, config.ak_table, {desc: hope.desc, date: hope.date, bumpCount: hope.bumpCount}, (res) ->
+  ak.post config.ak_schema, config.ak_table, {desc: hope.desc, date: hope.date, bumpcount: hope.bumpcount}, (res) ->
     log('posted a hope')(res)
   response.send( JSON.stringify(hope) )
 
@@ -52,8 +60,12 @@ app.get '/list/:id', (request, response) ->
 
 app.put '/list/:id', (request, response) ->
   hope = request.body
-  ak.put config.ak_schema, config.ak_table, {id: hope.id, desc: hope.desc, date: hope.date, bumpCount: hope.bumpCount}, request.params.id, (res) ->
-    response.send res
+  # TODO - PUT to update an entity not supported at the moment
+  # once that support is added, modify this
+  db.query(
+    "update #{config.ak_table} set bumpcount = #{hope.bumpcount} where id = #{hope.id}"
+  )
+  response.send( JSON.stringify(hope) )
 
 app.delete '/list/:id', (request, response) ->
   ak.del config.ak_schema, config.ak_table, request.params.id, (res) ->
