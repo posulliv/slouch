@@ -19,9 +19,6 @@ app.configure( ->
   app.use(express.static(__dirname + '/public'))
 )
 
-app.get '/', (request, response) ->
-  response.render('index', title: 'Home')
-
 log = (msg) ->
   () ->
     console.log("========")
@@ -32,6 +29,9 @@ log = (msg) ->
         console.log(x)
     console.log(arguments) if arguments[0].error
     console.log("--------")
+
+app.get '/', (request, response) ->
+  response.render('index', title: 'Home')
 
 app.get '/list', (request, response) ->
   ak.get config.ak_schema, config.ak_table, '', (res) ->
