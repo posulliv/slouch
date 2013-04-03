@@ -6,7 +6,7 @@ class AkibanClient
   constructor: (@host, @port) ->
     @host = @host || 'localhost'
     @port = @port || '8091'
-    @base = "http://#{@host}:#{@port}/api"
+    @base = "http://#{@host}:#{@port}/v1/entity"
 
   _do_request : (method, path, body, options, cc) ->
     req_opts =
@@ -73,7 +73,7 @@ class AkibanResult
       @content_type = response.headers['content-type']
       if @status >= 200 && @status < 300
         @error = false
-        @body  = if (result && result.length > 0) then (if (@content_type == "application/json") then JSON.parse(result) else result) else null
+        @body  = if (result && result.length > 1) then (if (@content_type == "application/json") then JSON.parse(result) else result) else null
       else
         if @status >= 400 && @status < 500
           @error  = true

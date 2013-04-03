@@ -60,12 +60,9 @@ app.get '/list/:id', (request, response) ->
 
 app.put '/list/:id', (request, response) ->
   hope = request.body
-  # TODO - PUT to update an entity not supported at the moment
-  # once that support is added, modify this
-  db.query(
-    "update #{config.ak_table} set bumpcount = #{hope.bumpcount} where id = #{hope.id}"
-  )
-  response.send( JSON.stringify(hope) )
+  ak.put config.ak_schema, config.ak_table, request.params.id, {desc: hope.desc, date: hope.date, bumpcount: hope.bumpcount}, (res) ->
+    log('updated a hope')(res)
+    response.send res.body
 
 app.delete '/list/:id', (request, response) ->
   ak.del config.ak_schema, config.ak_table, request.params.id, (res) ->
