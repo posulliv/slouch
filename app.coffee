@@ -5,7 +5,7 @@ app = express.createServer()
 _ = require('underscore')
 akiban = require('./akiban_rest')
 pg = require('pg').native
-ak = new akiban.AkibanClient(config.ak_host, config.ak_rest_port)
+ak = new akiban.AkibanClient(config.ak_host, config.ak_rest_port, config.ak_user, config.ak_password)
 
 app.configure( ->
   app.set('views', __dirname + '/views')

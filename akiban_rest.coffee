@@ -3,10 +3,15 @@ request = require('request')
 _       = require('underscore')
 
 class AkibanClient
-  constructor: (@host, @port) ->
+  constructor: (@host, @port, @user, @password) ->
     @host = @host || 'localhost'
     @port = @port || '8091'
-    @base = "http://#{@host}:#{@port}/v1/entity"
+    @user = @user || ''
+    @password = @password || ''
+    if @user
+      @base = "https://#{@user}:#{@password}@#{@host}:#{@port}/v1/entity"
+    else
+      @base = "https://#{@host}:#{@port}/v1/entity"
 
   _do_request : (method, path, body, options, cc) ->
     req_opts =
