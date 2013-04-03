@@ -6,13 +6,6 @@ _ = require('underscore')
 akiban = require('./akiban_rest')
 pg = require('pg').native
 ak = new akiban.AkibanClient(config.ak_host, config.ak_rest_port)
-#db = new pg.Client(config.ak_db_url)
-db = new pg.Client(
-  host: config.ak_host,
-  port: config.ak_sql_port,
-  database: config.ak_schema
-)
-db.connect()
 
 app.configure( ->
   app.set('views', __dirname + '/views')
@@ -48,7 +41,6 @@ app.get '/list', (request, response) ->
 
 app.post '/list', (request, response) ->
   hope = request.body
-  #ak.post config.ak_schema, config.ak_table, JSON.stringify(hope), (res) ->
   ak.post config.ak_schema, config.ak_table, {desc: hope.desc, date: hope.date, bumpcount: hope.bumpcount}, (res) ->
     log('posted a hope')(res)
     response.send res.body
